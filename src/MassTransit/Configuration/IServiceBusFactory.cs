@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using MassTransit;
 using MassTransit.SubscriptionConfigurators;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Nybus.MassTransit;
 
 namespace Nybus.Configuration
@@ -41,6 +45,10 @@ namespace Nybus.Configuration
 
                 bus.ReceiveFrom(receiveUri);
                 bus.UseJsonSerializer();
+
+                bus.ConfigureJsonSerializer(ConfigureIsoDateTimeConverters);
+                bus.ConfigureJsonDeserializer(ConfigureIsoDateTimeConverters);
+
                 bus.SetConcurrentConsumerLimit(_concurrencyLimit);
 
                 foreach (var subscription in subscriptions)
@@ -48,6 +56,18 @@ namespace Nybus.Configuration
 
                 bus.Validate();
             });
+        }
+
+        private static JsonSerializerSettings ConfigureIsoDateTimeConverters(JsonSerializerSettings settings)
+        {
+            var isoDateTimeConverters = settings.Converters.OfType<IsoDateTimeConverter>().ToArray();
+
+            foreach (var converter in isoDateTimeConverters)
+            {
+                converter.Culture = CultureInfo.InvariantCulture;
+            }
+
+            return settings;
         }
     }
 
@@ -64,12 +84,27 @@ namespace Nybus.Configuration
                 bus.ReceiveFrom(receiveUri);
                 bus.UseJsonSerializer();
 
+                bus.ConfigureJsonSerializer(ConfigureIsoDateTimeConverters);
+                bus.ConfigureJsonDeserializer(ConfigureIsoDateTimeConverters);
+
                 foreach (var subscription in subscriptions)
                     bus.Subscribe(subscription);
 
                 bus.Validate();
 
             });
+        }
+
+        private static JsonSerializerSettings ConfigureIsoDateTimeConverters(JsonSerializerSettings settings)
+        {
+            var isoDateTimeConverters = settings.Converters.OfType<IsoDateTimeConverter>().ToArray();
+
+            foreach (var converter in isoDateTimeConverters)
+            {
+                converter.Culture = CultureInfo.InvariantCulture;
+            }
+
+            return settings;
         }
     }
 }

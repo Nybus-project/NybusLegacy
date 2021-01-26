@@ -31,15 +31,19 @@ artifacts:
   - path: outputs\tests\report
     name: report
     type: zip
-
+      
 deploy:
   - provider: Environment
     name: NuGet
     on:
-      branch: master
+      branch:
+        - master
+        - main
       appveyor_repo_tag: true
   - provider: Environment
     name: GitHub Packages - Nybus
     on:
-      branch: master
+      branch:
+        - master
+        - main
       appveyor_repo_tag: true
